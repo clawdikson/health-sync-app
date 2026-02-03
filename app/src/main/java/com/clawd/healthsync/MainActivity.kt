@@ -139,7 +139,18 @@ class MainActivity : AppCompatActivity() {
             val granted = healthConnectClient.permissionController.getGrantedPermissions()
             if (!granted.containsAll(permissions)) {
                 // Request Health Connect permissions
-                requestPermissions.launch(permissions)
+                try {
+                    requestPermissions.launch(permissions)
+                } catch (e: Exception) {
+                    // If contract fails, try opening Health Connect settings directly
+                    statusText.text = "⚠️ Opening Health Connect...\n\nPlease enable permissions for ClawdBot Health"
+                    try {
+                        val intent = android.content.Intent("androidx.health.ACTION_HEALTH_CONNECT_SETTINGS")
+                        startActivity(intent)
+                    } catch (e2: Exception) {
+                        statusText.text = "❌ Could not open Health Connect\n\nError: ${e.message}"
+                    }
+                }
             } else {
                 syncData()
             }

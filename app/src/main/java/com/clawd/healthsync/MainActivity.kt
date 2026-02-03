@@ -53,9 +53,15 @@ class MainActivity : AppCompatActivity() {
 
         // Check if Health Connect is available
         val availabilityStatus = HealthConnectClient.getSdkStatus(this)
-        if (availabilityStatus == HealthConnectClient.SDK_UNAVAILABLE) {
-            statusText.text = "Health Connect is not available on this device"
-            return
+        when (availabilityStatus) {
+            HealthConnectClient.SDK_UNAVAILABLE -> {
+                statusText.text = "❌ Health Connect not available\n\nThis device doesn't support Health Connect"
+                return
+            }
+            HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
+                statusText.text = "⚠️ Health Connect needs update\n\nPlease update Health Connect from Play Store"
+                return
+            }
         }
 
         healthConnectClient = HealthConnectClient.getOrCreate(this)
@@ -92,7 +98,16 @@ class MainActivity : AppCompatActivity() {
             if (granted.containsAll(permissions)) {
                 syncData()
             } else {
-                statusText.text = "❌ Permissions denied"
+                val missing = permissions - granted
+                statusText.text = """
+                    ❌ Permissions denied
+                    
+                    Missing: ${missing.size} permissions
+                    
+                    Try: Open Health Connect app
+                    → Apps → ClawdBot Health
+                    → Enable all permissions
+                """.trimIndent()
             }
         }
     }

@@ -75,6 +75,9 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Daily sync enabled (8 AM)", Toast.LENGTH_SHORT).show()
         }
 
+        // Setup settings button
+        setupSettingsButton()
+
         // Check permissions on start
         lifecycleScope.launch {
             checkPermissions()
@@ -104,10 +107,29 @@ class MainActivity : AppCompatActivity() {
                     
                     Missing: ${missing.size} permissions
                     
-                    Try: Open Health Connect app
-                    → Apps → ClawdBot Health
-                    → Enable all permissions
+                    Tap button below to open
+                    Health Connect settings
                 """.trimIndent()
+                showOpenSettingsButton()
+            }
+        }
+    }
+    
+    private fun showOpenSettingsButton() {
+        findViewById<Button>(R.id.openSettingsButton)?.visibility = android.view.View.VISIBLE
+    }
+    
+    private fun setupSettingsButton() {
+        findViewById<Button>(R.id.openSettingsButton)?.setOnClickListener {
+            try {
+                val intent = android.content.Intent("androidx.health.ACTION_HEALTH_CONNECT_SETTINGS")
+                startActivity(intent)
+            } catch (e: Exception) {
+                // Fallback: open app settings
+                val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                intent.data = android.net.Uri.parse("package:$packageName")
+                startActivity(intent)
+                Toast.makeText(this, "Find Health Connect in Privacy settings", Toast.LENGTH_LONG).show()
             }
         }
     }

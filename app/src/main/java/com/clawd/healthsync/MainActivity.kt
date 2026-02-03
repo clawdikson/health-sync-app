@@ -6,6 +6,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.*
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -83,28 +84,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkPermissionsAndSync() {
-        lifecycleScope.launch {
-            val granted = healthConnectClient.permissionController.getGrantedPermissions()
-            if (!granted.containsAll(permissions)) {
-                // Request permissions
-                val contract = healthConnectClient.permissionController.createRequestPermissionResultContract()
-                requestPermissions.launch(permissions)
-            } else {
-                syncData()
-            }
-        }
-    }
+    // Health Connect permission request contract
+    private val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
 
-    private val requestPermissions = registerForActivityResult(
-        androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
-    ) { _ ->
+    private val requestPermissions = registerForActivityResult(requestPermissionActivityContract) { granted ->
         lifecycleScope.launch {
-            val granted = healthConnectClient.permissionController.getGrantedPermissions()
             if (granted.containsAll(permissions)) {
                 syncData()
             } else {
                 statusText.text = "❌ Permissions denied"
+            }
+        }
+    }
+
+    private fun checkPermissionsAndSync() {
+        lifecycleScope.launch {
+            val granted = healthConnectClient.permissionController.getGrantedPermissions()
+            if (!granted.containsAll(permissions)) {
+                // Request Health Connect permissions
+                requestPermissions.launch(permissions)
+            } else {
+                syncData()
             }
         }
     }

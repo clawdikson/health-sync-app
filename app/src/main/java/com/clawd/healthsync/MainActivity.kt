@@ -162,7 +162,7 @@ class MainActivity : AppCompatActivity() {
 
         try {
             val now = Instant.now()
-            val weekAgo = now.minus(7, ChronoUnit.DAYS)
+            val weekAgo = now.minus(30, ChronoUnit.DAYS)
             val dayAgo = now.minus(1, ChronoUnit.DAYS)
 
             // Read sleep data
